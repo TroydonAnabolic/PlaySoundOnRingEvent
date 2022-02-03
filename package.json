@@ -1,0 +1,28 @@
+{
+  "name": "RingNode2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Ring.js",
+  "dependencies": {
+    "@aws-sdk/client-lambda": "^3.16.0",
+    "@aws-sdk/client-s3": "^3.16.0",
+    "@aws-sdk/node-http-handler": "^3.3.0",
+    "@aws-sdk/types": "^3.3.0",
+    "aws-sdk": "^2.1068.0",
+    "play-sound": "^1.1.5",
+    "ring-client-api": "^9.24.0",
+    "ssm-parameter-store": "^2.1.2",
+    "ts-node": "^9.0.0",
+    "util": "^0.12.3"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.45",
+    "typescript": "^4.2.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
