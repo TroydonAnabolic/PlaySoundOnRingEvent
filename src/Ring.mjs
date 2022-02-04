@@ -13,6 +13,7 @@ const REGION = "ap-southeast-2";
 import pkg from 'play-sound';
 const { PlaySound } = pkg;
 var func = new pkg("cdmp3");
+import 'dotenv/config' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 
 // TODO: get param from SSM when using PC for dogegit 
 // import AWS from 'aws-sdk';
@@ -75,7 +76,7 @@ const s3Client = new S3Client({ region: REGION });
 const lambdaClient = new LambdaClient({ region: REGION });
 
 const ringApi = new RingApi({
-  refreshToken: 'eyJhbGciOiJIUzUxMiIsImprdSI6Ii9vYXV0aC9pbnRlcm5hbC9qd2tzIiwia2lkIjoiYzEyODEwMGIiLCJ0eXAiOiJKV1QifQ.eyJpYXQiOjE2NDM4NzI0MjEsImlzcyI6IlJpbmdPYXV0aFNlcnZpY2UtcHJvZDp1cy1lYXN0LTE6NjAzZjIzNzgiLCJyZWZyZXNoX2NpZCI6InJpbmdfb2ZmaWNpYWxfYW5kcm9pZCIsInJlZnJlc2hfc2NvcGVzIjpbImNsaWVudCJdLCJyZWZyZXNoX3VzZXJfaWQiOjU1ODYwNTkwLCJybmQiOiJOMmxNbjJseW5PLUFRUSIsInNlc3Npb25faWQiOiI5NTZlN2JmYS0xODZiLTQyNjMtOTc3OC0zNDVjZWU4MzM2ZGQiLCJ0eXBlIjoicmVmcmVzaC10b2tlbiJ9.OxVwu5hZdfAzCUiixc_Z-PXpZlQxG5h7gEp2aN85C4vP3Fibg--glEzIL0kAwXdxG8sBED5dQBcJlO9_kB9m0g',
+  refreshToken: process.env.RING_REFRESH_TOKEN,
   cameraDingsPollingSeconds: 2
   //locationIds: ['488e4800-fcde-4493-969b-d1a06f683102', '4bbed7a7-06df-4f18-b3af-291c89854d60']
 });
@@ -101,23 +102,20 @@ console.log(`Using chime: ${chime.name}`)
 //       if (err) console.log(err);
 //     }); 
 // };
-
+// TODO: maybe put this in an async method and try awaoting it make the camera async foreach and maybe do a datetime stamp 
   // exec('afplay whatever.mp3', audioEndCallback)
-  func.play('SoundsToPlay/SuperCarDoge.mp3', { timeout: 4000 }, function (err) {
-    if (err) console.log(err);
-  }); 
 
-
+startPlaySound(func);
 
 const startScanning = async () => {
 
-  cameras.forEach(camera => {
+  cameras.forEach(async camera => {
     console.log("Awaiting motion");
     // when the door bell detects motion
     //if (camera.name == 'Doorbell Camera') {
       camera.startVideoOnDemand
     //on new motion detected
-    camera.onNewDing.subscribe(ding => {
+    camera.onNewDing.subscribe(async ding => {
       const event =
         ding.kind === 'motion'
           ? `Motion Detected at Camera: ${camera.name}`
@@ -129,10 +127,14 @@ const startScanning = async () => {
       // play sound when motion detected
       // TODO: use set timeout to delay 4s before playing again so it does not keep playing
       // or try using the audio.kill if possible after 4s
-      console.log("Playing doge car after motion detected.")
-      func.play('SoundsToPlay/SuperCarDoge.mp3', { timeout: 4000 }, function (err) {
-        if (err) console.log(err);
-      }); 
+      // setTimeout(function(){
+      //   console.log("Playing doge car after motion detected.")
+      //   var playSound = func.play('SoundsToPlay/SuperCarDoge.mp3', { timeout: 4000 }, function (err) {
+      //     if (err) console.log("An Error ocurred when playing sound: " + err);
+      //   }); 
+      //   }, 4000);
+       await startPlaySound(func);
+
       // $ mplayer foo.mp3 
       // PlaySound.play('SoundsToPlay/Doge10minMix.mp3',  { timeout: 300 }, function (err) {
       //   if (err) console.log(err);
@@ -146,7 +148,7 @@ const startScanning = async () => {
       // save the image
 
       console.log(`Starting Video from ${camera.name} ...`);
-      camera.recordToFile(`recordings/${camera.name}-${ding.id}-Recording.mp4`, 30);
+      //camera.recordToFile(`recordings/${camera.name}-${ding.id}-Recording.mp4`, 30);
       console.log('Done recording video');
       // now image processing with lambda
       //processFootageLambda();
@@ -154,6 +156,13 @@ const startScanning = async () => {
     });
   });
 };
+
+async function startPlaySound(func) {
+  func.play('SoundsToPlay/SuperCarDoge9s.mp3', { timeout: 4000 }, function (err) {
+    if (err) console.log("An Error ocurred when playing sound: " + err);
+  }); 
+}
+
 
 function getFormattedDate() {
   var today = new Date();
